@@ -1,6 +1,12 @@
 package com.fuyi.mybatis_demo;
 
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +38,7 @@ public class App {
 	@Test
 	public void testSelectOne() {
 		SqlSession openSession = sessionFactory.openSession();
-		User user = openSession.selectOne("test.findById", 3);
+		User user = openSession.selectOne("com.fuyi.mybatis_demo.mapper.UserMapper.findById", 3);
 		System.out.println(user);
 		
 		/*int count = openSession.selectOne("test.selectCount");
@@ -85,5 +91,65 @@ public class App {
 		openSession = sessionFactory.openSession();
 		User user1 = openSession.getMapper(UserMapper.class).findById(5);
 		System.out.println(user1);
+	}
+	
+	@Test
+	public void testInsert() {
+		SqlSession openSession = sessionFactory.openSession();
+		
+		User user = new User();
+		user.setName("haha");
+		user.setAge(123);
+		//user.setId(444);
+		openSession.insert("com.fuyi.mybatis_demo.mapper.UserMapper.insert", user);
+		openSession.commit();
+		
+		System.out.println(user.getId());
+	}
+	
+	@Test
+	public void testJDBC() {
+		Connection connection = null;
+		PreparedStatement pstat = null;
+		ResultSet rs = null;
+		try {
+			// 1. 加载驱动类
+			Class.forName("com.mysql.jdbc.Driver");
+			
+			// 2. 获取连接
+			String url = "jdbc:mysql://localhost:3306/mybatis_demo";
+			connection = DriverManager.getConnection(url, "root", "123456");
+			
+			// 3. 创建pstat,并设置参数，以1开始
+			String sql = "select * from tb_user where id = ?";
+			pstat = connection.prepareStatement(sql);
+			pstat.setString(1, "aaa");
+			pstat.setInt(2, 123);
+			
+			/**
+			 * 4. 执行sql
+			 * 
+			 * executeQuery(): 返回结果集ResultSet
+			 * execute(): 返回是否执行成功boolean
+			 */
+			rs = pstat.executeQuery();
+			
+			while(rs.next()){
+				System.out.println(rs.getString("name"));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			
+			// 5. 关闭相关资源
+			try {
+				if(connection != null) connection.close();
+				if(pstat != null) pstat.close();
+				if(rs != null) rs.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

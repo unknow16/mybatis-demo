@@ -5,54 +5,62 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <!-- 配置命名空间，区别名称 -->
 <mapper namespace="com.fuyi.mybatis_demo.mapper.UserMapper">
-	
+
 	<!-- 开启二级缓存 -->
-	<cache 
-		eviction="FIFO"
-		flushInterval="60000"
-		size="512"
-		readOnly="true"
-	/>
-	
+	<cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true" />
+
 	<sql id="cols">
 		id, name, age
 	</sql>
-	
-	
+
+
 	<select id="findById" parameterType="int" resultType="User">
-		select <include refid="cols"/> from tb_user where id = #{id}
+		select
+		<include refid="cols" />
+		from tb_user where id = #{id}
 	</select>
-	
+
 	<select id="selectCount" resultType="int">
-		select count(id) from tb_user
+		select count(id) from
+		tb_user
 	</select>
-	
+
 	<!-- 批量删除，通过数组 -->
 	<delete id="batchDeleteByIds" parameterType="int">
 		delete from tb_user
 		where id in
-		<foreach collection="array" item="id" open="(" close=")" separator=",">
+		<foreach collection="array" item="id" open="(" close=")"
+			separator=",">
 			#{id}
 		</foreach>
 	</delete>
-	
+
 	<!-- 批量删除，通过list -->
 	<delete id="batchDeleteListByIds" parameterType="int">
 		delete from tb_user
 		where id in
-		<foreach collection="list" item="id" open="(" close=")" separator=",">
+		<foreach collection="list" item="id" open="(" close=")"
+			separator=",">
 			#{id}
 		</foreach>
 	</delete>
-	
+
 	<!-- 批量删除，通过map -->
 	<delete id="batchDeleteMapByIds" parameterType="map">
 		delete from tb_user
 		where id in
-		<foreach collection="ids" item="id" open="(" close=")" separator=",">
+		<foreach collection="ids" item="id" open="(" close=")"
+			separator=",">
 			#{id}
 		</foreach>
 	</delete>
-	
-	
+
+	<!-- 获取插入后返回主键
+	 useGeneratedKeys="true" keyProperty="id"
+	 -->
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="User">
+		insert into tb_user(name, age)
+		value ( #{name}, #{age})
+	</insert>
+
 </mapper>
